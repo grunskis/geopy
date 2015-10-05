@@ -43,7 +43,8 @@ class Nominatim(Geocoder):
             proxies=None,
             domain='nominatim.openstreetmap.org',
             scheme=DEFAULT_SCHEME,
-            user_agent=None
+            user_agent=None,
+            api_key=None,
     ):  # pylint: disable=R0913
         """
         :param string format_string: String containing '%s' where the
@@ -81,6 +82,7 @@ class Nominatim(Geocoder):
         self.format_string = format_string
         self.view_box = view_box
         self.domain = domain.strip('/')
+        self.api_key = api_key
 
         self.api = "%s://%s/search" % (self.scheme, self.domain)
         self.reverse_api = "%s://%s/reverse" % (self.scheme, self.domain)
@@ -171,6 +173,9 @@ class Nominatim(Geocoder):
         if language:
             params['accept-language'] = language
 
+        if self.api_key:
+            params['key'] = self.api_key
+
         if geometry is not None:
             geometry = geometry.lower()
             if geometry == 'wkt':
@@ -242,6 +247,8 @@ class Nominatim(Geocoder):
         }
         if language:
             params['accept-language'] = language
+        if self.api_key:
+            params['key'] = self.api_key
         url = "?".join((self.reverse_api, urlencode(params)))
         logger.debug("%s.reverse: %s", self.__class__.__name__, url)
         return self._parse_json(
